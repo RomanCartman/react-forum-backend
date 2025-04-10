@@ -5,6 +5,7 @@
 
 # cursor
 /.cursor
+/.specstory
 
 # Logs
 logs
