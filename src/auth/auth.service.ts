@@ -8,7 +8,6 @@ import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserDto } from './dto/user.dto';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -148,6 +147,6 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    return plainToClass(UserDto, user, { excludeExtraneousValues: true });
+    return user;
   }
 } 
