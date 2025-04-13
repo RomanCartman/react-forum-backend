@@ -15,7 +15,13 @@ export class User {
   password: string;
 
   @Column()
-  username: string;
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column({ nullable: true, default: null })
+  studentGroup: string;
 
   @CreateDateColumn()
   createdAt: Date;

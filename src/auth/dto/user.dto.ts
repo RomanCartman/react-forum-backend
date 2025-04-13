@@ -9,7 +9,13 @@ export class UserDto {
   email: string;
 
   @Expose()
-  username: string;
+  firstName: string;
+
+  @Expose()
+  lastName: string;
+
+  @Expose()
+  studentGroup: string;
 
   @Expose()
   createdAt: Date;
