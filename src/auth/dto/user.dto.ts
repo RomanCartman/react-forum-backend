@@ -1,4 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
+import { Role } from '../../users/enums/role.enum';
 
 @Exclude()
 export class UserDto {
@@ -16,6 +17,9 @@ export class UserDto {
 
   @Expose()
   studentGroup: string;
+
+  @Expose()
+  role: Role;
 
   @Expose()
   createdAt: Date;
