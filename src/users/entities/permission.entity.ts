@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { Role } from '../enums/role.enum';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { User } from './user.entity';
+import { Role } from './role.entity';
 
 @Entity('permissions')
 export class Permission {
@@ -13,9 +13,15 @@ export class Permission {
   @Column({ type: 'text' })
   description: string;
 
-  @Column('simple-array', { nullable: true })
-  allowedRoles: Role[];
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToMany(() => User, user => user.permissions)
   users: User[];
+
+  @ManyToMany(() => Role, role => role.permissions)
+  roles: Role[];
 } 

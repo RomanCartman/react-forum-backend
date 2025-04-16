@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
-import { Role } from '../enums/role.enum';
+import { Role } from './role.entity';
 import { Permission } from './permission.entity';
 
 @Entity('users')
@@ -28,13 +28,6 @@ export class User {
   @Column({ nullable: true, default: null })
   studentGroup: string;
 
-  @Column({
-    type: 'enum',
-    enum: Role,
-    default: Role.STUDENT
-  })
-  role: Role;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -43,6 +36,14 @@ export class User {
 
   @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: RefreshToken[];
+
+  @ManyToMany(() => Role, role => role.users)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'roleId', referencedColumnName: 'id' }
+  })
+  roles: Role[];
 
   @ManyToMany(() => Permission, permission => permission.users)
   @JoinTable({

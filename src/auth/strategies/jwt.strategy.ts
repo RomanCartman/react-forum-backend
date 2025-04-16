@@ -28,7 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     const user = await this.userRepository.findOne({
       where: { id: payload.sub },
-      select: ['id', 'email', 'role'],
+      select: ['id', 'email', 'roles', 'firstName', 'lastName', 'permissions'],
+      relations: ['roles', 'roles.permissions', 'permissions'],
     });
 
     if (!user) {
@@ -39,7 +40,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       sub: user.id,
       email: user.email,
       username: payload.username,
-      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      roles: user.roles,
+      permissions: user.permissions,
     };
   }
 } 

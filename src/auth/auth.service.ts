@@ -9,6 +9,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserDto } from './dto/user.dto';
 import { plainToClass } from 'class-transformer';
+import { RoleService, RoleName } from '../users/services/role.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly roleService: RoleService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -35,6 +37,12 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     });
+
+    // Получаем роль STUDENT и назначаем ее новому пользователю
+    const studentRole = await this.roleService.findByName(RoleName.STUDENT);
+    if (studentRole) {
+      user.roles = [studentRole];
+    }
 
     await this.userRepository.save(user);
     const tokens = await this.generateTokens(user);
@@ -99,7 +107,7 @@ export class AuthService {
           sub: user.id, 
           email: user.email,
           username: user.username,
-          role: user.role 
+          roles: user.roles 
         },
         {
           secret: this.configService.get('jwt.accessSecret'),
@@ -159,7 +167,7 @@ export class AuthService {
   async getUserProfile(username: string, isOwnProfile: boolean) {
     const user = await this.userRepository.findOne({
       where: { username },
-      relations: ['permissions'],
+      relations: ['permissions', 'roles'],
     });
 
     if (!user) {
@@ -174,7 +182,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         studentGroup: user.studentGroup,
-        role: user.role,
+        roles: user.roles,
         permissions: user.permissions,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -186,7 +194,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       studentGroup: user.studentGroup,
-      role: user.role,
+      roles: user.roles,
       createdAt: user.createdAt,
     };
   }

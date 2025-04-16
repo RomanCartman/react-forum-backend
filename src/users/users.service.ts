@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Role } from './enums/role.enum';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -20,19 +20,23 @@ export class UsersService {
         firstName: true,
         lastName: true,
         studentGroup: true,
-        role: true,
         createdAt: true,
         updatedAt: true,
       },
+      relations: ['roles'],
       order: {
         createdAt: 'DESC',
       },
     });
   }
 
-  async findByRole(role: Role) {
+  async findByRole(roleId: string) {
     return this.userRepository.find({
-      where: { role },
+      where: {
+        roles: {
+          id: roleId
+        }
+      },
       select: {
         id: true,
         email: true,
@@ -40,10 +44,10 @@ export class UsersService {
         firstName: true,
         lastName: true,
         studentGroup: true,
-        role: true,
         createdAt: true,
         updatedAt: true,
       },
+      relations: ['roles'],
     });
   }
 } 

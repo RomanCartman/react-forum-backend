@@ -2,7 +2,8 @@ import { Injectable, CanActivate, ExecutionContext, SetMetadata } from '@nestjs/
 import { Reflector } from '@nestjs/core';
 import { PermissionService } from '../services/permission.service';
 
-export const RequirePermissions = (...permissions: string[]) => SetMetadata('permissions', permissions);
+export const PERMISSIONS_KEY = 'permissions';
+export const RequirePermissions = (...permissions: string[]) => SetMetadata(PERMISSIONS_KEY, permissions);
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -12,23 +13,33 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const permissions = this.reflector.get<string[]>('permissions', context.getHandler());
-    
-    if (!permissions) {
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredPermissions) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.sub;
+    const user = request.user;
 
-    if (!userId) {
+    if (!user) {
       return false;
     }
 
-    const hasAllPermissions = await Promise.all(
-      permissions.map(permission => this.permissionService.hasPermission(userId, permission))
-    );
+    // Проверяем все необходимые разрешения
+    for (const permission of requiredPermissions) {
+      const hasPermission = await this.permissionService.hasPermission(
+        user.sub,
+        permission,
+      );
+      if (!hasPermission) {
+        return false;
+      }
+    }
 
-    return hasAllPermissions.every(Boolean);
+    return true;
   }
 } 
