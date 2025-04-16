@@ -3,7 +3,10 @@ import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../users/guards/permission.guard';
+import { RequirePermissions } from '../users/guards/permission.guard';
 import { Request } from 'express';
+import { PermissionName } from '../users/enums/permission.enum';
 
 interface RequestWithUser extends Request {
   user: { sub: string };
@@ -13,7 +16,8 @@ interface RequestWithUser extends Request {
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PermissionName.CREATE_NEWS)
   @Post()
   create(@Body() createNewsDto: CreateNewsDto, @Req() req: RequestWithUser) {
     return this.newsService.create(createNewsDto, req.user.sub);
@@ -29,7 +33,8 @@ export class NewsController {
     return this.newsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PermissionName.UPDATE_NEWS)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -39,7 +44,8 @@ export class NewsController {
     return this.newsService.update(id, updateNewsDto, req.user.sub);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PermissionName.DELETE_NEWS)
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.newsService.remove(id, req.user.sub);

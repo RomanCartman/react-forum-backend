@@ -159,6 +159,7 @@ export class AuthService {
   async getUserProfile(username: string, isOwnProfile: boolean) {
     const user = await this.userRepository.findOne({
       where: { username },
+      relations: ['permissions'],
     });
 
     if (!user) {
@@ -174,6 +175,7 @@ export class AuthService {
         lastName: user.lastName,
         studentGroup: user.studentGroup,
         role: user.role,
+        permissions: user.permissions,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       };

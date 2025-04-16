@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 import { Role } from '../enums/role.enum';
+import { Permission } from './permission.entity';
 
 @Entity('users')
 export class User {
@@ -42,4 +43,12 @@ export class User {
 
   @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: RefreshToken[];
+
+  @ManyToMany(() => Permission, permission => permission.users)
+  @JoinTable({
+    name: 'user_permissions',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'permissionId', referencedColumnName: 'id' }
+  })
+  permissions: Permission[];
 } 
