@@ -60,7 +60,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {...tokens, username: user.username};
   }
 
   async refresh(refreshToken: string) {
@@ -98,6 +98,7 @@ export class AuthService {
         { 
           sub: user.id, 
           email: user.email,
+          username: user.username,
           role: user.role 
         },
         {
@@ -153,5 +154,38 @@ export class AuthService {
     }
 
     return plainToClass(UserDto, user, { excludeExtraneousValues: true });
+  }
+
+  async getUserProfile(username: string, isOwnProfile: boolean) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (isOwnProfile) {
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        studentGroup: user.studentGroup,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    }
+
+    return {
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      studentGroup: user.studentGroup,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
   }
 } 
