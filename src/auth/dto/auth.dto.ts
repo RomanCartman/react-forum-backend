@@ -5,6 +5,10 @@ export class RegisterDto {
   email: string;
 
   @IsString()
+  @MinLength(3)
+  username: string;
+
+  @IsString()
   @MinLength(2)
   firstName: string;
 
