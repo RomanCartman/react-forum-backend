@@ -77,7 +77,12 @@ export class RoleService implements OnModuleInit {
   }
 
   async findAll(): Promise<Role[]> {
-    return this.roleRepository.find();
+    return this.roleRepository.find({
+      relations: ['permissions'],
+      order: {
+        createdAt: 'ASC'
+      }
+    });
   }
 
   async findOne(id: string): Promise<Role> {
