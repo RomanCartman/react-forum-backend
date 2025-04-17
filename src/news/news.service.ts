@@ -22,6 +22,22 @@ export class NewsService {
 
   async findAll(): Promise<News[]> {
     return this.newsRepository.find({
+      relations: ['author'],
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        images: true,
+        createdAt: true,
+        updatedAt: true,
+        authorId: true,
+        author: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+        }
+      },
       order: { createdAt: 'DESC' },
     });
   }
@@ -29,6 +45,22 @@ export class NewsService {
   async findOne(id: string): Promise<News> {
     const news = await this.newsRepository.findOne({
       where: { id },
+      relations: ['author'],
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        images: true,
+        createdAt: true,
+        updatedAt: true,
+        authorId: true,
+        author: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+        }
+      },
     });
 
     if (!news) {

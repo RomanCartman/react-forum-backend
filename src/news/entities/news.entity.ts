@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Expose, Transform } from 'class-transformer';
 
 @Entity('news')
 export class News {
@@ -15,7 +16,13 @@ export class News {
   @Column('simple-array')
   images: string[];
 
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User)
+  @Transform(({ value }) => value ? {
+    id: value.id,
+    username: value.username,
+    firstName: value.firstName,
+    lastName: value.lastName
+  } : null)
   author: User;
 
   @Column()

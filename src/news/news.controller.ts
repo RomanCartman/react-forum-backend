@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
@@ -13,6 +13,7 @@ interface RequestWithUser extends Request {
 }
 
 @Controller('news')
+@UseInterceptors(ClassSerializerInterceptor)
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
