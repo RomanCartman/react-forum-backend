@@ -88,6 +88,7 @@ export class RoleService implements OnModuleInit {
   async findOne(id: string): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id },
+      relations: ['permissions'],
     });
 
     if (!role) {
@@ -98,7 +99,14 @@ export class RoleService implements OnModuleInit {
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
-    const role = await this.findOne(id);
+    const role = await this.roleRepository.findOne({
+      where: { id },
+      relations: ['permissions'],
+    });
+
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     // Проверяем, не пытаемся ли мы изменить системную роль
     if ([RoleName.STUDENT, RoleName.TEACHER, RoleName.ADMINISTRATOR].includes(role.name as RoleName)) {

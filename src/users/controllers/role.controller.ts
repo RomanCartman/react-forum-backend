@@ -8,12 +8,13 @@ import { RequirePermissions } from '../guards/permission.guard';
 import { PermissionName } from '../enums/permission.enum';
 
 @Controller('roles')
-@UseGuards(JwtAuthGuard, PermissionGuard)
-@RequirePermissions(PermissionName.MANAGE_ROLES)
+@UseGuards(JwtAuthGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Post()
+  @UseGuards(PermissionGuard)
+  @RequirePermissions(PermissionName.MANAGE_ROLES)
   create(@Body() createRoleDto: CreateRoleDto) {
     return this.roleService.create(createRoleDto);
   }
@@ -29,11 +30,15 @@ export class RoleController {
   }
 
   @Patch(':id')
+  @UseGuards(PermissionGuard)
+  @RequirePermissions(PermissionName.MANAGE_ROLES)
   update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
     return this.roleService.update(id, updateRoleDto);
   }
 
   @Delete(':id')
+  @UseGuards(PermissionGuard)
+  @RequirePermissions(PermissionName.MANAGE_ROLES)
   remove(@Param('id') id: string) {
     return this.roleService.remove(id);
   }
