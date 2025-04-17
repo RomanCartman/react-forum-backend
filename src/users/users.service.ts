@@ -13,8 +13,8 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      relations: ['roles', 'roles.permissions'],
-      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles'],
+      relations: ['roles', 'roles.permissions', 'permissions'],
+      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles', 'permissions'],
     });
   }
 
@@ -23,6 +23,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'role')
       .leftJoinAndSelect('role.permissions', 'permission')
+      .leftJoinAndSelect('user.permissions', 'userPermission')
       .where('role.name = :roleName', { roleName })
       .select([
         'user.id',
@@ -32,7 +33,8 @@ export class UsersService {
         'user.lastName',
         'user.studentGroup',
         'role',
-        'permission'
+        'permission',
+        'userPermission'
       ])
       .getMany();
   }
@@ -40,8 +42,8 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['roles', 'roles.permissions'],
-      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles'],
+      relations: ['roles', 'roles.permissions', 'permissions'],
+      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles', 'permissions'],
     });
 
     if (!user) {
@@ -54,8 +56,8 @@ export class UsersService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['roles', 'roles.permissions'],
-      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles'],
+      relations: ['roles', 'roles.permissions', 'permissions'],
+      select: ['id', 'email', 'username', 'firstName', 'lastName', 'studentGroup', 'roles', 'permissions'],
     });
 
     if (!user) {
