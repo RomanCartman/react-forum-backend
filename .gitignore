@@ -3,8 +3,13 @@
 /node_modules
 /build
 
+# migrations
+src/migrations/*
+
 # cursor
 /.cursor
+/.specstory
+/.cursorindexingignore
 
 # Logs
 logs

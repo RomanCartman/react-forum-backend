@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +7,9 @@ import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
+import { UserDto } from './dto/user.dto';
+import { plainToClass } from 'class-transformer';
+import { RoleService, RoleName } from '../users/services/role.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,7 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly roleService: RoleService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -33,6 +37,12 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     });
+
+    // Получаем роль STUDENT и назначаем ее новому пользователю
+    const studentRole = await this.roleService.findByName(RoleName.STUDENT);
+    if (studentRole) {
+      user.roles = [studentRole];
+    }
 
     await this.userRepository.save(user);
     const tokens = await this.generateTokens(user);
@@ -58,7 +68,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {...tokens, username: user.username};
   }
 
   async refresh(refreshToken: string) {
@@ -93,7 +103,12 @@ export class AuthService {
   private async generateTokens(user: User) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: user.id, email: user.email },
+        { 
+          sub: user.id, 
+          email: user.email,
+          username: user.username,
+          roles: user.roles 
+        },
         {
           secret: this.configService.get('jwt.accessSecret'),
           expiresIn: this.configService.get('jwt.accessExpiresIn'),
@@ -135,5 +150,52 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async getCurrentUser(userId: string): Promise<UserDto> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return plainToClass(UserDto, user, { excludeExtraneousValues: true });
+  }
+
+  async getUserProfile(username: string, isOwnProfile: boolean) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['permissions', 'roles'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (isOwnProfile) {
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        studentGroup: user.studentGroup,
+        roles: user.roles,
+        permissions: user.permissions,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    }
+
+    return {
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      studentGroup: user.studentGroup,
+      roles: user.roles,
+      createdAt: user.createdAt,
+    };
   }
 } 

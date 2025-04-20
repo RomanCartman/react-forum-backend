@@ -1,11 +1,12 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Get, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 import { Request } from 'express';
 
 interface RequestWithUser extends Request {
-  user: { sub: string; email: string };
+  user: { sub: string; email: string; username: string };
 }
 
 @Controller('auth')
@@ -31,5 +32,15 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req: RequestWithUser) {
     return this.authService.logout(req.user.sub);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(':username')
+  async getUserProfile(
+    @Param('username') username: string,
+    @Req() req: RequestWithUser,
+  ) {
+    const isOwnProfile = req.user?.username === username;
+    return this.authService.getUserProfile(username, isOwnProfile);
   }
 } 

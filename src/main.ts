@@ -15,7 +15,7 @@ async function bootstrap() {
     credentials: true,
   });
   
-  // Глобальная валидация DTO
+  // Глобальная валидация и трансформация
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
